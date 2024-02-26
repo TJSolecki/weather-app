@@ -43,18 +43,51 @@ struct WeatherParams {
     zipcode: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct WeatherResponse {
+    latitude: f64,
+    longitude: f64,
+    timezone: String,
+    hourly: Hourly,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Hourly {
+    time: Vec<String>,
+    temperature_2m: Vec<f64>,
+    weather_code: Vec<u16>,
+}
+
 #[axum_macros::debug_handler]
 async fn get_weather(
     Query(params): Query<WeatherParams>,
     State(api_keys): State<ApiKeys>,
-) -> Result<Json<LongLat>, StatusCode> {
-    match get_long_lat(&params.zipcode, &api_keys.geocoding_api_key).await {
-        Ok(long_lat) => Ok(Json(long_lat)),
-        Err(err) => {
+) -> Result<Json<WeatherResponse>, StatusCode> {
+    let long_lat = get_long_lat(&params.zipcode, &api_keys.geocoding_api_key)
+        .await
+        .map_err(|_| StatusCode::NOT_FOUND)?;
+    fetch_weather(&long_lat.lon, &long_lat.lat)
+        .await
+        .map_err(|err| {
             println!("{:?}", err);
-            Err(StatusCode::BAD_REQUEST)
-        }
-    }
+            return StatusCode::INTERNAL_SERVER_ERROR;
+        })
+}
+
+async fn fetch_weather(
+    lon: &str,
+    lat: &str,
+) -> Result<Json<WeatherResponse>, Box<dyn std::error::Error>> {
+    let endpoint = format!(
+        "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&hourly=temperature_2m,weather_code",
+        lat, lon
+    );
+
+    let response = reqwest::get(&endpoint)
+        .await?
+        .json::<WeatherResponse>()
+        .await?;
+    Ok(Json(response))
 }
 
 async fn get_long_lat(zipcode: &str, api_key: &str) -> Result<LongLat, Box<dyn std::error::Error>> {
