@@ -6,22 +6,16 @@ use axum::{Json, Router};
 use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone)]
-struct ApiKeys {
-    geocoding_api_key: String,
-}
-
 #[tokio::main]
 async fn main() {
     dotenv().ok();
 
     let geocoding_api_key = std::env::var("GEOCODING_API_KEY")
         .unwrap_or_else(|_| panic!("GEOCODING_API_KEY not found in .env"));
-    let api_keys = ApiKeys { geocoding_api_key };
 
     let app = Router::new()
         .route("/weather", get(get_weather))
-        .with_state(api_keys);
+        .with_state(geocoding_api_key);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
@@ -61,9 +55,9 @@ struct Hourly {
 #[axum_macros::debug_handler]
 async fn get_weather(
     Query(params): Query<WeatherParams>,
-    State(api_keys): State<ApiKeys>,
+    State(api_key): State<String>,
 ) -> Result<Json<WeatherResponse>, StatusCode> {
-    let long_lat = get_long_lat(&params.zipcode, &api_keys.geocoding_api_key)
+    let long_lat = get_long_lat(&params.zipcode, &api_key)
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
     fetch_weather(&long_lat.lon, &long_lat.lat)
