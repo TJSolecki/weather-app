@@ -19,7 +19,6 @@ async fn main() {
         .unwrap_or_else(|_| panic!("GEOCODING_API_KEY not found in .env"));
     let api_keys = ApiKeys { geocoding_api_key };
 
-    // build our application with a route
     let app = Router::new()
         .route("/weather", get(get_weather))
         .with_state(api_keys);
@@ -34,15 +33,9 @@ async fn main() {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-struct LongLatStrings {
+struct LongLat {
     lon: String,
     lat: String,
-}
-
-#[derive(Deserialize, Serialize, Debug, Clone)]
-struct LongLat {
-    lon: f64,
-    lat: f64,
 }
 
 #[derive(Deserialize)]
@@ -70,19 +63,10 @@ async fn get_long_lat(zipcode: &str, api_key: &str) -> Result<LongLat, Box<dyn s
         zipcode, api_key
     ))
     .await?
-    .json::<Vec<LongLatStrings>>()
+    .json::<Vec<LongLat>>()
     .await?;
 
-    let parsed_res: Vec<LongLat> = res
-        .iter()
-        .map(|long_lat_strs| LongLat {
-            lon: long_lat_strs.lon.parse().unwrap_or(0.0),
-            lat: long_lat_strs.lat.parse().unwrap_or(0.0),
-        })
-        .collect();
-
-    parsed_res
-        .get(0)
+    res.get(0)
         .cloned()
         .ok_or("No results found for given zipcode".into())
 }
