@@ -27,7 +27,8 @@ async fn main() {
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-struct LongLat {
+struct LocationData {
+    display_name: String,
     lon: String,
     lat: String,
 }
@@ -54,6 +55,7 @@ struct Hourly {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct WeatherDisplay {
+    display_name: String,
     forecasts: Vec<Forecast>,
 }
 
@@ -69,8 +71,9 @@ fn celsius_to_fahrenheit(celsius: &f64) -> f64 {
     (*celsius * 9.0 / 5.0) + 32.0
 }
 impl WeatherDisplay {
-    fn new(weather_data: &WeatherResponse) -> WeatherDisplay {
+    fn new(weather_data: &WeatherResponse, display_name: &String) -> WeatherDisplay {
         WeatherDisplay {
+            display_name: display_name.to_string(),
             forecasts: weather_data
                 .hourly
                 .time
@@ -92,16 +95,16 @@ async fn get_weather(
     Query(params): Query<WeatherParams>,
     State(api_key): State<String>,
 ) -> Result<Json<WeatherDisplay>, StatusCode> {
-    let long_lat = get_long_lat(&params.zipcode, &api_key)
+    let location_data = get_location_data(&params.zipcode, &api_key)
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
-    let weather_data = fetch_weather(&long_lat.lon, &long_lat.lat)
+    let weather_data = fetch_weather(&location_data.lon, &location_data.lat)
         .await
         .map_err(|err| {
             println!("{:?}", err);
             return StatusCode::INTERNAL_SERVER_ERROR;
         })?;
-    let weather_display = WeatherDisplay::new(&weather_data);
+    let weather_display = WeatherDisplay::new(&weather_data, &location_data.display_name);
     Ok(Json(weather_display))
 }
 
@@ -121,13 +124,16 @@ async fn fetch_weather(
     Ok(response)
 }
 
-async fn get_long_lat(zipcode: &str, api_key: &str) -> Result<LongLat, Box<dyn std::error::Error>> {
+async fn get_location_data(
+    zipcode: &str,
+    api_key: &str,
+) -> Result<LocationData, Box<dyn std::error::Error>> {
     let res = reqwest::get(format!(
         "https://geocode.maps.co/search?q={}&api_key={}",
         zipcode, api_key
     ))
     .await?
-    .json::<Vec<LongLat>>()
+    .json::<Vec<LocationData>>()
     .await?;
 
     res.get(0)
