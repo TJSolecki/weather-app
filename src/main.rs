@@ -93,22 +93,22 @@ struct WeatherDisplay {
 #[derive(Serialize, Deserialize, Debug)]
 struct CurrentForecast {
     time: String,
-    temp_max: f64,
-    temp_min: f64,
+    temp_max: i32,
+    temp_min: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct HourlyForecast {
     date: String,
-    temperature: f64,
+    temperature: i32,
     weather_code: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct DailyForecast {
     date: String,
-    temperature_min: f64,
-    temperature_max: f64,
+    temperature_min: i32,
+    temperature_max: i32,
     weather_code: String,
 }
 
@@ -191,8 +191,8 @@ impl WeatherDisplay {
             display_name: display_name.split(",").take(1).collect(),
             current: CurrentForecast {
                 time: now.format("%-l:%M %p").to_string(),
-                temp_max: todays_forecast.temperature_max,
-                temp_min: todays_forecast.temperature_min,
+                temp_max: todays_forecast.temperature_max as i32,
+                temp_min: todays_forecast.temperature_min as i32,
             },
             hourly: weather_data
                 .hourly
@@ -209,7 +209,7 @@ impl WeatherDisplay {
                 .filter(|hour| hour.date >= this_hour)
                 .map(|hour| HourlyForecast {
                     date: hour.date.format("%-l %p").to_string(),
-                    temperature: hour.temperature,
+                    temperature: hour.temperature as i32,
                     weather_code: hour.weather_code,
                 })
                 .collect(),
@@ -232,8 +232,8 @@ impl WeatherDisplay {
                 .filter(|day| day.date >= today)
                 .map(|day| DailyForecast {
                     date: day.date.format("%-m/%d").to_string(),
-                    temperature_min: day.temperature_min,
-                    temperature_max: day.temperature_max,
+                    temperature_min: day.temperature_min as i32,
+                    temperature_max: day.temperature_max as i32,
                     weather_code: day.weather_code.to_string(),
                 })
                 .collect(),
