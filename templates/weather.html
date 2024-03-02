@@ -11,60 +11,66 @@
     </head>
 
     <body>
-        <section class="heads-up-wrapper">
-            <h1 class="xl temp">
-                {{ current.temp }}<span class="h3 degree-symbol">°F</span>
-            </h1>
-            <h2 class="h3">{{ display_name }}</h2>
-            <h3 class="h5">
-                {{ current.time }} | H: {{ current.temp_max }}° L:{{
-                current.temp_min }}°
-            </h3>
-        </section>
-        <section class="hourly-wrapper">
-            <h4>Hourly Forecast</h4>
-            <ul>
-                {% for hour in hourly %}
-                <li>
-                    <p class="hourly-time">{{ hour.date }}</p>
-                    <img
-                        src="https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/extreme-rain.svg"
-                        alt="extreme-rain"
-                        loading="lazy"
-                        class="opNLj"
-                    />
-                    <p class="hourly-temp">{{ hour.temperature }}°F</p>
-                </li>
-                {% endfor %}
-            </ul>
-        </section>
-        <section class="daily-wrapper">
-            <h4>5-Day Forecast</h4>
-            <table>
-                <tbody>
-                    {% for day in daily %}
-                    <tr>
-                        <td>
-                            <p class="date">{{ day.date }}</p>
-                        </td>
-                        <td>
-                            <img
-                                src="https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/extreme-rain.svg"
-                                alt="extreme-rain"
-                                loading="lazy"
-                                class="opNLj"
-                            />
-                        </td>
-                        <td>
-                            <p class="high">H: {{ day.temperature_max }}°F</p>
-                        </td>
-                        <td>
-                            <p class="low">L: {{ day.temperature_min }}°F</p>
-                        </td>
-                    </tr>
+        <div class="dashboard-wrapper">
+            <section class="heads-up-wrapper">
+                <h1 class="xl temp">
+                    {{ current.temp }}<span class="h3 degree-symbol">°F</span>
+                </h1>
+                <h2 class="h3">{{ display_name }}</h2>
+                <h3 class="h5">
+                    {{ current.time }} | H: {{ current.temp_max }}° L:{{
+                    current.temp_min }}°
+                </h3>
+            </section>
+            <section class="hourly-wrapper">
+                <h4>Hourly Forecast</h4>
+                <ul>
+                    {% for hour in hourly %}
+                    <li>
+                        <p class="hourly-time">{{ hour.date }}</p>
+                        <img
+                            src="https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/extreme-rain.svg"
+                            alt="extreme-rain"
+                            loading="lazy"
+                            class="opNLj"
+                        />
+                        <p class="hourly-temp">{{ hour.temperature }}°F</p>
+                    </li>
                     {% endfor %}
-                </tbody>
-            </table>
-        </section>
+                </ul>
+            </section>
+            <section class="daily-wrapper">
+                <h4>5-Day Forecast</h4>
+                <table>
+                    <tbody>
+                        {% for day in daily %}
+                        <tr>
+                            <td>
+                                <p class="date">{{ day.date }}</p>
+                            </td>
+                            <td>
+                                <img
+                                    src="https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/extreme-rain.svg"
+                                    alt="extreme-rain"
+                                    loading="lazy"
+                                    class="opNLj"
+                                />
+                            </td>
+                            <td>
+                                <p class="high">
+                                    H: {{ day.temperature_max }}°F
+                                </p>
+                            </td>
+                            <td>
+                                <p class="low">
+                                    L: {{ day.temperature_min }}°F
+                                </p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </div>
     </body>
 </html>
