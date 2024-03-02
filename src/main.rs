@@ -1,5 +1,5 @@
 use askama::Template;
-use axum::extract::{Json, Query, State};
+use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::routing::get;
 use axum::Router;
@@ -75,13 +75,6 @@ struct Daily {
     temperature_2m_min: Vec<f64>,
     weather_code: Vec<u16>,
 }
-
-// #[derive(Template, Serialize, Deserialize, Debug)]
-// #[template(path = "weather.html")]
-// struct WeatherDisplay {
-//     display_name: String,
-//     forecasts: Vec<Forecast>,
-// }
 
 #[derive(Template, Serialize, Deserialize, Debug)]
 #[template(path = "weather.html")]
@@ -247,6 +240,7 @@ impl WeatherDisplay {
                     temperature: hour.temperature as i32,
                     weather_code: hour.weather_code,
                 })
+                .take(24)
                 .collect(),
             daily: weather_data
                 .daily
