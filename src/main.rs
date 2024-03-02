@@ -7,6 +7,7 @@ use axum::routing::get;
 use axum::Router;
 use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() {
@@ -17,6 +18,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/weather", get(get_weather))
+        .nest_service("", ServeDir::new("static"))
         .with_state(geocoding_api_key);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
