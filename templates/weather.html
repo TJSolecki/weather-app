@@ -1,26 +1,70 @@
-<!doctype html>
-<html lang="en">
+<html>
     <head>
-        <meta charset="UTF-8" />
-        <title>Weather</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/styles.css" />
+        <title>{{ display_name }}</title>
     </head>
+
     <body>
-        <h1>Weather for {{ display_name }}</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temperature</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for forecast in forecasts %}
-                <tr>
-                    <td>{{ forecast.date }}</td>
-                    <td>{{ forecast.temperature }}</td>
-                </tr>
+        <section class="heads-up-wrapper">
+            <h1 class="xl temp">
+                {{ current.temp }}<span class="h3 degree-symbol">°F</span>
+            </h1>
+            <h2 class="h3">{{ display_name }}</h2>
+            <h3 class="h5">
+                {{ current.time }} | H: {{ current.temp_max }}° L:{{
+                current.temp_min }}°
+            </h3>
+        </section>
+        <section class="hourly-wrapper">
+            <h4>Hourly Forecast</h4>
+            <ul>
+                {% for hour in hourly %}
+                <li>
+                    <p class="hourly-time">{{ hour.date }}</p>
+                    <img
+                        src="https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/extreme-rain.svg"
+                        alt="extreme-rain"
+                        loading="lazy"
+                        class="opNLj"
+                    />
+                    <p class="hourly-temp">{{ hour.temperature }}°F</p>
+                </li>
                 {% endfor %}
-            </tbody>
-        </table>
+            </ul>
+        </section>
+        <section class="daily-wrapper">
+            <h4>5-Day Forecast</h4>
+            <table>
+                <tbody>
+                    {% for day in daily %}
+                    <tr>
+                        <td>
+                            <p class="date">{{ day.date }}</p>
+                        </td>
+                        <td>
+                            <img
+                                src="https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/extreme-rain.svg"
+                                alt="extreme-rain"
+                                loading="lazy"
+                                class="opNLj"
+                            />
+                        </td>
+                        <td>
+                            <p class="high">H: {{ day.temperature_max }}°F</p>
+                        </td>
+                        <td>
+                            <p class="low">L: {{ day.temperature_min }}°F</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
     </body>
 </html>

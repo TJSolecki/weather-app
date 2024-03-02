@@ -1,10 +1,10 @@
-use chrono::{DateTime, Datelike, TimeZone, Timelike, Utc};
-use core::panic;
-// use askama::Template;
+use askama::Template;
 use axum::extract::{Json, Query, State};
 use axum::http::StatusCode;
 use axum::routing::get;
 use axum::Router;
+use chrono::{DateTime, Datelike, TimeZone, Timelike, Utc};
+use core::panic;
 use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
 use tower_http::services::ServeDir;
@@ -83,7 +83,8 @@ struct Daily {
 //     forecasts: Vec<Forecast>,
 // }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Template, Serialize, Deserialize, Debug)]
+#[template(path = "weather.html")]
 struct WeatherDisplay {
     display_name: String,
     current: CurrentForecast,
@@ -279,7 +280,7 @@ impl WeatherDisplay {
 async fn get_weather(
     Query(params): Query<WeatherParams>,
     State(api_key): State<String>,
-) -> Result<Json<WeatherDisplay>, StatusCode> {
+) -> Result<WeatherDisplay, StatusCode> {
     let location_data = get_location_data(&params.zipcode, &api_key)
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
@@ -290,7 +291,7 @@ async fn get_weather(
             return StatusCode::INTERNAL_SERVER_ERROR;
         })?;
     let weather_display = WeatherDisplay::new(&weather_data, &location_data.display_name);
-    Ok(Json(weather_display))
+    Ok(weather_display)
 }
 
 async fn fetch_weather(
