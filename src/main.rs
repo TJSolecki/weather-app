@@ -1,6 +1,5 @@
-use core::panic;
-
 use chrono::{DateTime, Datelike, TimeZone, Timelike, Utc};
+use core::panic;
 // use askama::Template;
 use axum::extract::{Json, Query, State};
 use axum::http::StatusCode;
@@ -95,6 +94,7 @@ struct CurrentForecast {
     time: String,
     temp_max: i32,
     temp_min: i32,
+    temp: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -187,12 +187,44 @@ impl WeatherDisplay {
             .get(0)
             .unwrap_or_else(|| panic!("Daily forecast not found"));
 
+        let current_hour_tuple = (now.year(), now.month(), now.day(), now.hour());
+        let hourly_forcasts: Vec<HourlyForecastWithDateTime> = weather_data
+            .hourly
+            .time
+            .iter()
+            .zip(weather_data.hourly.temperature_2m.iter())
+            .zip(weather_data.hourly.weather_code.iter())
+            .map(|((time, temp), weather_code)| HourlyForecastWithDateTime {
+                date: DateTime::from_timestamp(time + utc_time_offset, 0)
+                    .unwrap_or_else(|| panic!("Could not parse unixtime")),
+                temperature: *temp,
+                weather_code: weather_code.to_string(),
+            })
+            .collect();
+
+        let this_hours_forecasts: Vec<&HourlyForecastWithDateTime> = hourly_forcasts
+            .iter()
+            .filter(|forecast| {
+                (
+                    forecast.date.year(),
+                    forecast.date.month(),
+                    forecast.date.day(),
+                    forecast.date.hour(),
+                ) == current_hour_tuple
+            })
+            .take(1)
+            .collect();
+        let this_hours_forecast = this_hours_forecasts
+            .get(0)
+            .unwrap_or_else(|| panic!("Could not unwrap this hours forcast"));
+
         return WeatherDisplay {
             display_name: display_name.split(",").take(1).collect(),
             current: CurrentForecast {
                 time: now.format("%-l:%M %p").to_string(),
                 temp_max: todays_forecast.temperature_max as i32,
                 temp_min: todays_forecast.temperature_min as i32,
+                temp: this_hours_forecast.temperature as i32,
             },
             hourly: weather_data
                 .hourly
