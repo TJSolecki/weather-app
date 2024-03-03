@@ -179,6 +179,7 @@ ul li img {
 .daily-wrapper table tr {
     width: 100%;
     display: flex;
+    align-items: center;
     justify-content: space-between;
 }
 
@@ -203,9 +204,14 @@ img {
         --base-size: 1.5rem;
     }
 
+    body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .dashboard-wrapper {
         max-width: 1200px;
-        margin: auto;
         display: grid;
         grid-template-rows: auto auto;
         grid-template-columns: 1fr 1fr;
