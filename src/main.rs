@@ -169,13 +169,6 @@ impl WeatherDisplay {
         let this_hour = DateTime::from_timestamp(this_hour.timestamp() + utc_time_offset, 0)
             .unwrap_or_else(|| panic!("Unwrap for this_hour failed"));
 
-        let today = Utc
-            .with_ymd_and_hms(now_utc.year(), now_utc.month(), now_utc.day() - 1, 0, 0, 0)
-            .unwrap();
-        let today = DateTime::from_timestamp(today.timestamp() + utc_time_offset, 0)
-            .unwrap_or_else(|| panic!("unwrap for today failed"));
-
-        let current_date_tuple = (now.year(), now.month(), now.day());
         let daily_forecasts: Vec<DailyForecastWithDateTime> = weather_data
             .daily
             .time
@@ -193,18 +186,10 @@ impl WeatherDisplay {
                 },
             )
             .collect();
-        let todays_forcasts: Vec<&DailyForecastWithDateTime> = daily_forecasts
+        let todays_forecast: &DailyForecastWithDateTime = daily_forecasts
             .iter()
-            .filter(|forecast| {
-                (
-                    forecast.date.year(),
-                    forecast.date.month(),
-                    forecast.date.day(),
-                ) == current_date_tuple
-            })
             .take(1)
-            .collect();
-        let todays_forecast = todays_forcasts
+            .collect::<Vec<&DailyForecastWithDateTime>>()
             .get(0)
             .unwrap_or_else(|| panic!("Daily forecast not found"));
 
@@ -295,7 +280,8 @@ impl WeatherDisplay {
                         weather_code: *weather_code,
                     },
                 )
-                .filter(|day| day.date >= today)
+                .skip(1)
+                .take(5)
                 .map(|day| DailyForecast {
                     date: day.date.format("%-m/%d").to_string(),
                     temperature_min: day.temperature_min as i32,
