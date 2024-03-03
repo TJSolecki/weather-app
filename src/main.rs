@@ -7,6 +7,9 @@ use chrono::{DateTime, Datelike, TimeZone, Timelike, Utc};
 use core::panic;
 use dotenv::dotenv;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
 use tower_http::services::ServeDir;
 
 #[tokio::main]
@@ -16,10 +19,20 @@ async fn main() {
     let geocoding_api_key = std::env::var("GEOCODING_API_KEY")
         .unwrap_or_else(|_| panic!("GEOCODING_API_KEY not found in .env"));
 
+    let file = File::open("./src/weather-codes.json").expect("Failed to open file");
+
+    let reader = BufReader::new(file);
+
+    let weather_code_to_href: HashMap<String, String> =
+        serde_json::from_reader(reader).expect("Failed to parse JSON");
+
     let app = Router::new()
         .route("/weather", get(get_weather))
         .nest_service("", ServeDir::new("static"))
-        .with_state(geocoding_api_key);
+        .with_state(LocalState {
+            api_key: geocoding_api_key,
+            weather_code_to_href,
+        });
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
@@ -28,6 +41,12 @@ async fn main() {
     axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
+}
+
+#[derive(Clone)]
+struct LocalState {
+    api_key: String,
+    weather_code_to_href: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -122,7 +141,11 @@ struct HourlyForecastWithDateTime {
 }
 
 impl WeatherDisplay {
-    fn new(weather_data: &WeatherResponse, display_name: &String) -> WeatherDisplay {
+    fn new(
+        weather_data: &WeatherResponse,
+        display_name: &String,
+        weather_code_to_href: &HashMap<String, String>,
+    ) -> WeatherDisplay {
         let utc_time_offset = weather_data.utc_offset_seconds;
         let current_time = weather_data.current.time;
 
@@ -214,7 +237,7 @@ impl WeatherDisplay {
             .get(0)
             .unwrap_or_else(|| panic!("Could not unwrap this hours forcast"));
 
-        return WeatherDisplay {
+        WeatherDisplay {
             display_name: display_name.split(",").take(1).collect(),
             current: CurrentForecast {
                 time: now.format("%-l:%M %p").to_string(),
@@ -238,7 +261,10 @@ impl WeatherDisplay {
                 .map(|hour| HourlyForecast {
                     date: hour.date.format("%-l %p").to_string(),
                     temperature: hour.temperature as i32,
-                    weather_code: hour.weather_code,
+                    weather_code: weather_code_to_href
+                        .get(&hour.weather_code.to_string())
+                        .unwrap_or_else(|| panic!("Weather Code unkonwn"))
+                        .clone(),
                 })
                 .take(24)
                 .collect(),
@@ -263,19 +289,22 @@ impl WeatherDisplay {
                     date: day.date.format("%-m/%d").to_string(),
                     temperature_min: day.temperature_min as i32,
                     temperature_max: day.temperature_max as i32,
-                    weather_code: day.weather_code.to_string(),
+                    weather_code: weather_code_to_href
+                        .get(&day.weather_code.to_string())
+                        .unwrap_or_else(|| panic!("Weather Code unkonwn"))
+                        .clone(),
                 })
                 .collect(),
-        };
+        }
     }
 }
 
 #[axum_macros::debug_handler]
 async fn get_weather(
     Query(params): Query<WeatherParams>,
-    State(api_key): State<String>,
+    State(local_state): State<LocalState>,
 ) -> Result<WeatherDisplay, StatusCode> {
-    let location_data = get_location_data(&params.zipcode, &api_key)
+    let location_data = get_location_data(&params.zipcode, &local_state.api_key)
         .await
         .map_err(|_| StatusCode::NOT_FOUND)?;
     let weather_data = fetch_weather(&location_data.lon, &location_data.lat)
@@ -284,7 +313,11 @@ async fn get_weather(
             println!("{:?}", err);
             return StatusCode::INTERNAL_SERVER_ERROR;
         })?;
-    let weather_display = WeatherDisplay::new(&weather_data, &location_data.display_name);
+    let weather_display = WeatherDisplay::new(
+        &weather_data,
+        &location_data.display_name,
+        &local_state.weather_code_to_href,
+    );
     Ok(weather_display)
 }
 

@@ -29,7 +29,7 @@
                     <li>
                         <p class="hourly-time">{{ hour.date }}</p>
                         <img
-                            src="https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/extreme-rain.svg"
+                            src="{{ hour.weather_code }}"
                             alt="extreme-rain"
                             loading="lazy"
                             class="opNLj"
@@ -50,7 +50,7 @@
                             </td>
                             <td>
                                 <img
-                                    src="https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/extreme-rain.svg"
+                                    src="{{ day.weather_code }}"
                                     alt="extreme-rain"
                                     loading="lazy"
                                     class="opNLj"
