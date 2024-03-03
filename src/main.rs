@@ -85,6 +85,7 @@ struct Hourly {
     time: Vec<i64>,
     temperature_2m: Vec<f64>,
     weather_code: Vec<u16>,
+    is_day: Vec<u8>, // 1 for day 0 for night
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -138,6 +139,7 @@ struct HourlyForecastWithDateTime {
     date: DateTime<Utc>,
     temperature: f64,
     weather_code: String,
+    is_day: u8,
 }
 
 impl WeatherDisplay {
@@ -213,12 +215,16 @@ impl WeatherDisplay {
             .iter()
             .zip(weather_data.hourly.temperature_2m.iter())
             .zip(weather_data.hourly.weather_code.iter())
-            .map(|((time, temp), weather_code)| HourlyForecastWithDateTime {
-                date: DateTime::from_timestamp(time + utc_time_offset, 0)
-                    .unwrap_or_else(|| panic!("Could not parse unixtime")),
-                temperature: *temp,
-                weather_code: weather_code.to_string(),
-            })
+            .zip(weather_data.hourly.is_day.iter())
+            .map(
+                |(((time, temp), weather_code), is_day)| HourlyForecastWithDateTime {
+                    date: DateTime::from_timestamp(time + utc_time_offset, 0)
+                        .unwrap_or_else(|| panic!("Could not parse unixtime")),
+                    temperature: *temp,
+                    weather_code: weather_code.to_string(),
+                    is_day: *is_day,
+                },
+            )
             .collect();
 
         let this_hours_forecasts: Vec<&HourlyForecastWithDateTime> = hourly_forcasts
@@ -251,20 +257,25 @@ impl WeatherDisplay {
                 .iter()
                 .zip(weather_data.hourly.temperature_2m.iter())
                 .zip(weather_data.hourly.weather_code.iter())
-                .map(|((time, temp), weather_code)| HourlyForecastWithDateTime {
-                    date: DateTime::from_timestamp(time + utc_time_offset, 0)
-                        .unwrap_or_else(|| panic!("Could not parse unixtime")),
-                    temperature: *temp,
-                    weather_code: weather_code.to_string(),
-                })
+                .zip(weather_data.hourly.is_day.iter())
+                .map(
+                    |(((time, temp), weather_code), is_day)| HourlyForecastWithDateTime {
+                        date: DateTime::from_timestamp(time + utc_time_offset, 0)
+                            .unwrap_or_else(|| panic!("Could not parse unixtime")),
+                        temperature: *temp,
+                        weather_code: weather_code.to_string(),
+                        is_day: *is_day,
+                    },
+                )
                 .filter(|hour| hour.date >= this_hour)
                 .map(|hour| HourlyForecast {
                     date: hour.date.format("%-l %p").to_string(),
                     temperature: hour.temperature as i32,
-                    weather_code: weather_code_to_href
-                        .get(&hour.weather_code.to_string())
-                        .unwrap_or_else(|| panic!("Weather Code unkonwn"))
-                        .clone(),
+                    weather_code: get_weather_icon(
+                        &weather_code_to_href,
+                        &hour.weather_code,
+                        &hour.is_day,
+                    ),
                 })
                 .take(24)
                 .collect(),
@@ -299,6 +310,23 @@ impl WeatherDisplay {
     }
 }
 
+fn get_weather_icon(
+    weather_map: &HashMap<String, String>,
+    weather_code: &str,
+    is_day: &u8,
+) -> String {
+    if *is_day == 0 && vec!["0", "1", "2", "3"].contains(&weather_code) {
+        return weather_map
+            .get(&format!("{}night", weather_code))
+            .unwrap_or_else(|| panic!("could not unwrap night icon"))
+            .clone();
+    }
+    weather_map
+        .get(weather_code)
+        .unwrap_or_else(|| panic!("could not unwrap icon"))
+        .clone()
+}
+
 #[axum_macros::debug_handler]
 async fn get_weather(
     Query(params): Query<WeatherParams>,
@@ -326,7 +354,7 @@ async fn fetch_weather(
     lat: &str,
 ) -> Result<WeatherResponse, Box<dyn std::error::Error>> {
     let endpoint = format!(
-        "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&hourly=temperature_2m,weather_code&temperature_unit=fahrenheit&forecast_days=5&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&past_days=1&timezone=auto&timeformat=unixtime",
+        "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&hourly=temperature_2m,weather_code,is_day&temperature_unit=fahrenheit&forecast_days=5&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&past_days=1&timezone=auto&timeformat=unixtime",
         lat, lon
     );
 

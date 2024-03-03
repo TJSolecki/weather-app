@@ -1,9 +1,12 @@
 {
     "0": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/clear-day.svg",
+    "0night": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/clear-night.svg",
     "1": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/partly-cloudy-day.svg",
     "2": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/partly-cloudy-day.svg",
     "3": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/partly-cloudy-day.svg",
-    "4": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/clear-night.svg",
+    "1night": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/partly-cloudy-night.svg",
+    "2night": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/partly-cloudy-night.svg",
+    "3night": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/partly-cloudy-night.svg",
     "45": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/fog.svg",
     "48": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/fog.svg",
     "51": "https://bmcdn.nl/assets/weather-icons/v3.0/fill/svg/overcast-drizzle.svg",
