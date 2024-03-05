@@ -130,13 +130,14 @@ body {
     margin: 0;
     padding: 0.5rem 0;
     font-weight: 400;
-    font-size: var(--small);
+    font-size: 1rem;
     width: 80%;
     text-align: center;
     border-bottom: rgb(255 255 255 / 40%) 0.1rem solid;
 }
 
 .hourly-wrapper ul {
+    box-sizing: border-box;
     display: flex;
     overflow: auto;
     padding: 0 1rem;
