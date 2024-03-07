@@ -11,6 +11,22 @@
     </head>
 
     <body>
+        <header>
+            <form
+                autocomplete="off"
+                class="zip-code-input-wrapper"
+                action="weather"
+                method="get"
+            >
+                <input
+                    type="text"
+                    id="zipcode"
+                    name="zipcode"
+                    placeholder="Search Zipcode"
+                />
+                <button id="go-btn" type="submit">Go</button>
+            </form>
+        </header>
         <div class="dashboard-wrapper">
             <section class="heads-up-wrapper">
                 <h1 class="xl temp">
