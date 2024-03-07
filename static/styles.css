@@ -286,3 +286,44 @@ header {
         align-self: start;
     }
 }
+
+#main-page-wrapper {
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+}
+
+#main-page-wrapper div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#main-page-wrapper h1 {
+    text-align: center;
+    font-size: var(--h2);
+}
+
+#main-page-wrapper form {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+@media (min-width: 700px) {
+    #main-page-wrapper form input {
+        font-size: 2rem;
+    }
+
+    #main-page-wrapper form button {
+        font-size: 2rem;
+    }
+
+    #main-page-wrapper h1 {
+        font-size: var(--h1);
+    }
+}

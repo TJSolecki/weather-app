@@ -59,6 +59,7 @@ fn get_weather_icon(
         .unwrap_or_else(|| panic!("could not unwrap icon"))
         .clone()
 }
+
 #[axum_macros::debug_handler]
 async fn get_weather(
     Query(params): Query<WeatherParams>,
