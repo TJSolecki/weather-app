@@ -19,7 +19,7 @@ async fn main() {
     let geocoding_api_key = std::env::var("GEOCODING_API_KEY")
         .unwrap_or_else(|_| panic!("GEOCODING_API_KEY not found in .env"));
 
-    let file = File::open("./src/weather-codes.json").expect("Failed to open file");
+    let file = File::open("./weather-codes.json").expect("Failed to open file");
 
     let reader = BufReader::new(file);
 
