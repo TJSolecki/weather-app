@@ -295,7 +295,7 @@ header {
     width: 80%;
 }
 
-#main-page-wrapper div {
+#main-page-wrapper > div {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -326,4 +326,11 @@ header {
     #main-page-wrapper h1 {
         font-size: var(--h1);
     }
+}
+
+.form-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    color: red;
 }

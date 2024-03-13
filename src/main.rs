@@ -1,6 +1,6 @@
 use askama::Template;
 use axum::extract::{Query, State};
-use axum::http::StatusCode;
+use axum::http::{Response, StatusCode};
 use axum::routing::get;
 use axum::Router;
 use chrono::{DateTime, Datelike, TimeZone, Timelike, Utc};
@@ -62,15 +62,37 @@ fn get_weather_icon(
 async fn get_weather(
     Query(params): Query<WeatherParams>,
     State(local_state): State<LocalState>,
-) -> Result<WeatherDisplay, StatusCode> {
+) -> Result<WeatherDisplay, Response<String>> {
     let location_data = get_location_data(&params.zipcode, &local_state.api_key)
         .await
-        .map_err(|_| StatusCode::NOT_FOUND)?;
+        .map_err(|_| {
+            Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .header("Content-Type", "text/html; charset=utf-8")
+                .body(
+                    ErrorDisplay {
+                        message: "Error: The provided zipcode is not valid".into(),
+                    }
+                    .render()
+                    .unwrap(),
+                )
+                .unwrap()
+        })?;
     let weather_data = fetch_weather(&location_data.lon, &location_data.lat)
         .await
         .map_err(|err| {
             println!("{:?}", err);
-            StatusCode::INTERNAL_SERVER_ERROR
+            Response::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .header("Content-Type", "text/html; charset=utf-8")
+                .body(
+                    ErrorDisplay {
+                        message: "Error: Could not get the weather for this zipcode".into(),
+                    }
+                    .render()
+                    .unwrap(),
+                )
+                .unwrap()
         })?;
     let weather_display = WeatherDisplay::new(
         &weather_data,
@@ -173,6 +195,12 @@ pub struct WeatherDisplay {
     pub current: CurrentForecast,
     pub hourly: Vec<HourlyForecast>,
     pub daily: Vec<DailyForecast>,
+}
+
+#[derive(Template)]
+#[template(path = "error.html")]
+pub struct ErrorDisplay {
+    pub message: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
