@@ -7,6 +7,7 @@
             rel="stylesheet"
         />
         <link rel="stylesheet" href="/styles.css" />
+        <script defer src="/time.js"></script>
         <title>{{ display_name }}</title>
     </head>
 
@@ -34,8 +35,8 @@
                 </h1>
                 <h2 class="h3">{{ display_name }}</h2>
                 <h3 class="h5">
-                    {{ current.time }} | H: {{ current.temp_max }}° L:{{
-                    current.temp_min }}°
+                    <span id="time">{{ current.time }}</span> | H: {{
+                    current.temp_max }}° L:{{ current.temp_min }}°
                 </h3>
             </section>
             <section class="hourly-wrapper">
