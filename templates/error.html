@@ -11,27 +11,24 @@
 
     <body>
         <div id="main-page-wrapper">
-            <div>
-                <h1>What's the weather like in...?</h1>
-                <div class="form-wrapper">
-                    <ul>
-                        <li>{{ message }}</li>
-                    </ul>
-                    <form
-                        autocomplete="off"
-                        class="zip-code-input-wrapper"
-                        action="weather"
-                        method="get"
-                    >
-                        <input
-                            type="text"
-                            id="zipcode"
-                            name="zipcode"
-                            placeholder="Search Zipcode"
-                        />
-                        <button id="go-btn" type="submit">Go</button>
-                    </form>
-                </div>
+            <div class="form-wrapper">
+                <ul>
+                    <li>{{ message }}</li>
+                </ul>
+                <form
+                    autocomplete="off"
+                    class="zip-code-input-wrapper"
+                    action="weather"
+                    method="get"
+                >
+                    <input
+                        type="text"
+                        id="zipcode"
+                        name="zipcode"
+                        placeholder="Search Zipcode"
+                    />
+                    <button id="go-btn" type="submit">Go</button>
+                </form>
             </div>
         </div>
     </body>
