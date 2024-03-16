@@ -295,13 +295,6 @@ header {
     width: 80%;
 }
 
-#main-page-wrapper > div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
 #main-page-wrapper h1 {
     text-align: center;
     font-size: var(--h2);
