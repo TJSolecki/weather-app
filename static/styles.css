@@ -38,7 +38,6 @@ body {
     background-image: url("https://images.unsplash.com/photo-1513728731559-6bf2c0c931f9?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
     overflow-x: hidden;
     position: relative;
-    padding-top: 2rem;
 }
 
 .dashboard-wrapper {
@@ -97,7 +96,7 @@ h5,
     font-size: var(--h6);
 }
 
-.heads-up-wrapper > * {
+.heads-up-wrapper>* {
     margin: 0;
 }
 
